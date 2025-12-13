@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+      /* GLOBAL */
+      * { box-sizing: border-box; } body { font-family: 'Poppins', sans-serif; background-color: #f5f6fa; margin: 0; padding: 0; color: #333; -webkit-tap-highlight-color: transparent; } .hidden { display: none !important; }
+
+      /* Memastikan halaman utama selain Auth disembunyikan secara default */
+      #dashboard-page, #admin-page, #list-page, #fee-page, #wd-history-page, #profile-page {
+          display: none;
+      }
+      
+      /* AUTH */
+      .container-center { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: white; } .auth-box { width: 100%; max-width: 320px; text-align: center; } .input-box { margin-bottom: 15px; text-align: left; } .input-box label { font-size: 12px; color: #666; margin-bottom: 5px; display: block; font-weight: 600;} .input-box input { width: 100%; padding: 14px; border: 1px solid #eee; background: #f9f9f9; border-radius: 12px; font-size: 14px; outline: none; } .btn-primary { width: 100%; padding: 14px; background: #1E90FF; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 10px; box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3); } .link-text { margin-top: 20px; font-size: 12px; color: #888; cursor: pointer; } .link-text span { color: #1E90FF; font-weight: 600; } .error-alert { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 15px; display: none; text-align: left; }
+      
+      /* DASHBOARD HEADER (MINIMALIS) */
+      .header-minimal { 
+          background-color: white; 
+          padding: 15px 25px 15px 25px; 
+          color: #333; 
+          border-bottom: 1px solid #eee; 
+          position: sticky; 
+          top: 0; 
+          z-index: 10; 
+      } 
+      .header-admin { background-color: #2c3e50; padding: 25px; color: white; } 
+      .top-nav { display: flex; justify-content: space-between; align-items: center; } 
+      .user-avatar { width: 45px; height: 45px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; } 
+      
+      /* CARD SALDO (Margin disesuaikan karena header sudah minimalis) */
+      .card-saldo { 
+          background: linear-gradient(135deg, #42A5F5, #1E88E5); 
+          margin: 20px 20px 25px 20px; 
+          padding: 20px; 
+          border-radius: 20px; 
+          color: white; 
+          box-shadow: 0 15px 30px rgba(30, 144, 255, 0.25); 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+          position: relative; 
+          z-index: 10; 
+      } 
+      .btn-tarik { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; } 
+      .section-label { padding: 0 25px; font-weight: 700; font-size: 14px; color: #333; margin-bottom: 15px; } 
+      /* Grid menu disesuaikan untuk 4 item */
+      .grid-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px 15px; background: white; margin: 0 20px 20px 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.03); } .menu-item { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; } .icon-wrap { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: white; font-size: 20px; } .menu-name { font-size: 10px; color: #555; font-weight: 600; line-height: 1.2; } .c-purple { background: #7E57C2; } .c-blue { background: #42A5F5; } .c-pink { background: #EC407A; } .c-green { background: #66BB6A; } .c-orange { background: #FF9800; } 
+      
+      /* LISTS & CARDS */
+      .list-container, .fee-container { padding: 0 20px; margin-top: 20px; } .order-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #1E90FF; } .detail-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 10px; } .detail-table td { padding: 8px 0; border-bottom: 1px solid #f0f0f0; vertical-align: top; } .lbl { width: 35%; color: #888; font-weight: 500; } .val { width: 65%; color: #333; font-weight: 600; text-align: right; } .action-btn-group { display: flex; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; } .btn-edit { flex: 1; background: #FFF3E0; color: #EF6C00; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; } .btn-del { flex: 1; background: #FFEBEE; color: #C62828; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; } 
+      
+      /* Style khusus untuk tombol Edit yang nonaktif */
+      .btn-edit-disabled { 
+          flex: 1; 
+          background: #e0e0e0; 
+          color: #9e9e9e; 
+          border: none; 
+          padding: 10px; 
+          border-radius: 8px; 
+          font-size: 12px; 
+          font-weight: 700; 
+          cursor: not-allowed; 
+      }
+
+      .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #e3f2fd; color: #1976d2; } .date-label { font-size: 11px; color: #999; float: right; margin-top: 3px; }
+      .wd-card { background: white; border-radius: 12px; padding: 15px; margin: 15px 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ddd; } .wd-info h4 { margin: 0; font-size: 14px; color: #333; } .wd-info small { color: #999; font-size: 11px; } .wd-status { text-align: right; } .wd-nominal { font-weight: 700; font-size: 14px; color: #333; display: block; margin-bottom: 5px; } .badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 600; } .st-proses { background: #FFF8E1; color: #FBC02D; border: 1px solid #FFECB3; } .st-setor { background: #E3F2FD; color: #1976D2; border: 1px solid #BBDEFB; } .st-berhasil { background: #E8F5E9; color: #388E3C; border: 1px solid #C8E6C9; } .st-ditolak { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+      
+      /* ADMIN */
+      .admin-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 20px; } .admin-stat-card { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); } .admin-stat-card h3 { margin: 0 0 5px 0; font-size: 20px; font-weight: 700; color: #2c3e50; } .admin-stat-card small { color: #888; font-size: 11px; font-weight: 500; }
+      
+      /* Style tambahan untuk rincian status pesanan/WD */
+      .order-status-breakdown { display: flex; justify-content: space-around; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+      .status-item { text-align: center; }
+      .status-count { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+      .status-label { font-size: 10px; color: #888; }
+      .status-success { color: #388E3C; } /* Diterima / WD Berhasil */
+      .status-info { color: #1E90FF; }   /* Dikirim / WD Disetor */
+      .status-danger { color: #D32F2F; } /* Dibatalkan / WD Ditolak (Tambahan)*/
+      .status-warning { color: #D35400; } /* WD Diproses */
+
+      /* Style untuk Filter Cepat Pesanan Admin */
+      .filter-btn {
+          flex: 1;
+          padding: 8px 10px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          background: #f8f8f8;
+          color: #555;
+          font-weight: 600;
+          font-size: 11px;
+          cursor: pointer;
+          transition: all 0.2s;
+      }
+      .filter-btn.active {
+          background: #1E90FF;
+          color: white;
+          border-color: #1E90FF;
+      }
+
+      .admin-tabs { display: flex; margin: 0 20px 20px 20px; position: relative; z-index: 10; justify-content: space-between; gap:10px; border-bottom: 1px solid #eee; padding-bottom: 5px; } .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #f0f0f0; color: #555; font-weight: 600; font-size: 12px; cursor: pointer; } .tab-btn.active { background: #2c3e50; color: white; } .admin-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid #34495e; font-size: 12px; cursor: pointer; } .btn-setor { background: #1976D2; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 11px; margin-top: 5px; width: 100%; margin-bottom: 5px; font-weight: 600; } .btn-acc { background: #4CAF50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 11px; margin-top: 5px; width: 100%; font-weight: 600; } .btn-reject { background: #F44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 11px; width: 100%; font-weight: 600; } .btn-bonus { background: #9C27B0; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; width: 100%; margin-top:10px; }
+      .search-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 0px; font-size: 13px; } .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; } .custom-table { width: 100%; border-collapse: collapse; min-width: 600px; } .custom-table th { background-color: #f8f9fa; color: #333; font-weight: 700; text-align: left; padding: 12px; font-size: 12px; border-bottom: 2px solid #dee2e6; } .custom-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; color: #555; } .fee-amount { font-weight: 700; color: #2e7d32; }
+      .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; } .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 90vh; overflow-y: auto; } .modal-header { font-size: 16px; font-weight: 700; color: #0d47a1; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; } .form-row { display: flex; gap: 10px; margin-bottom: 10px; } .form-col { flex: 1; } .form-label { font-size: 12px; color: #555; margin-bottom: 5px; display: block; } .form-input, .form-select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; box-sizing: border-box; } .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; } .btn-cancel { background: #ccc; color: #333; padding: 10px 20px; border: none; border-radius: 5px; font-weight: 600; } .btn-submit { background: #1E90FF; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: 600; }
+      
+      /* Style Tambahan untuk User Card di Admin Order */
+      .user-group-card {
+          background: #34495e;
+          color: white;
+          padding: 15px;
+          border-radius: 10px;
+          margin-bottom: 10px;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      .back-to-list-btn {
+          width: 100%;
+          padding: 10px;
+          background: #999;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="auth-page" class="container-center">
+      <div id="form-login" class="auth-box">
+        <h2 style="color: #1E90FF;">Web Input NAI TEAM</h2>
+        <div class="input-box"><label>ID Pengguna/Username</label><input type="text" id="loginId"></div>
+        <div class="input-box"><label>Password</label><input type="password" id="loginPass"></div>
+        <button class="btn-primary" onclick="aksiLogin()" id="btnLogin">MASUK</button>
+        <div class="link-text">Belum punya akun? <span onclick="tampilRegister()">Daftar</span></div>
+      </div>
+      
+      <!-- KOREKSI: Harga Max Admin Dihapus, Penomoran Label Password Disempurnakan -->
+      <div id="form-register" class="auth-box hidden">
+        <h2 style="color: #1E90FF;">Buat Akun</h2>
+        <form id="regForm" onsubmit="aksiRegister(event)">
+          <div class="input-box"><label>1. Nama Lengkap</label><input type="text" name="regNama" id="regNama" required></div>
+          <div class="input-box"><label>2. Username (Akun Google)</label><input type="text" name="regId" id="regId" required></div>
+          
+          <!-- Hapus field Harga Max Admin -->
+          
+          <div class="input-box"><label>3. Password</label><input type="password" name="regPass" id="regPass" required></div>
+          <div class="input-box"><label>4. Konfirmasi Password</label><input type="password" id="regPassConfirm" required></div>
+          <button type="submit" id="btnReg" class="btn-primary">DAFTAR</button>
+        </form>
+        <div class="link-text">Sudah punya akun? <span onclick="tampilLogin()">Login</span></div>
+      </div>
+    </div>
+
+    <div id="dashboard-page">
+      <div class="header-minimal">
+        <div class="top-nav">
+          <div>
+            <span style="font-size:16px;font-weight:700; color:#1E90FF;">Selamat Datang</span><br>
+            <span id="viewNama" style="font-size:14px;font-weight:600; color:#555;">...</span>
+          </div>
+          <!-- Ganti tombol logout dengan tombol profil -->
+          <div class="user-avatar" onclick="bukaHalamanProfile()" style="background:#1E90FF; color:white;"><i class="fas fa-user-circle"></i></div>
+        </div>
+      </div>
+      <div class="card-saldo">
+        <div>
+            <div style="font-size:12px;opacity:0.9;">
+                Saldo Tersedia 
+                <i class="fas fa-sync-alt" style="margin-left:5px;cursor:pointer;" onclick="refreshSaldo()"></i> 
+            </div>
+            <div id="viewSaldo" style="font-size:26px;font-weight:700;">Rp 0</div>
+        </div>
+        <div class="btn-tarik" onclick="bukaModalTarik()">Tarik</div>
+      </div>
+      <div class="section-label">Menu Utama</div>
+      <div class="grid-menu">
+        <div class="menu-item" onclick="bukaModalInput('baru')"><div class="icon-wrap c-purple"><i class="fas fa-pen"></i></div><span class="menu-name">Input</span></div>
+        <div class="menu-item" onclick="bukaHalamanList()"><div class="icon-wrap c-blue"><i class="fas fa-box"></i></div><span class="menu-name">Pesanan</span></div>
+        <div class="menu-item" onclick="bukaHalamanFee()"><div class="icon-wrap c-pink"><i class="fas fa-chart-pie"></i></div><span class="menu-name">Fee</span></div>
+        <div class="menu-item" onclick="bukaHalamanWdHistory()"><div class="icon-wrap c-green"><i class="fas fa-wallet"></i></div><span class="menu-name">Riwayat<br>Tarik</span></div>
+      </div>
+    </div>
+    
+    <!-- Halaman Profil -->
+    <div id="profile-page">
+        <div class="header-minimal">
+            <div class="top-nav">
+                <div onclick="kembaliKeDash()" style="color:#1E90FF;cursor:pointer; font-weight:600;"><i class="fas fa-arrow-left"></i> Kembali</div>
+                <b>Pengaturan Data</b>
+                <div></div>
+            </div>
+        </div>
+        <div style="padding: 20px;">
+            <!-- Ganti Password -->
+            <div style="background:white; padding:15px; border-radius:12px; margin-bottom:20px; box-shadow:0 3px 10px rgba(0,0,0,0.05);">
+                <div style="font-size:16px; font-weight:700; color:#2c3e50; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">Ganti Password</div>
+                <form id="formPass" onsubmit="gantiPassword(event)">
+                    <div style="margin-bottom: 10px;"><label class="form-label">Password Baru</label><input type="password" class="form-input" id="newPass" required></div>
+                    <div style="margin-bottom: 10px;"><label class="form-label">Konfirmasi Password</label><input type="password" class="form-input" id="confPass" required></div>
+                    <button type="submit" id="btnGantiPass" class="btn-primary" style="margin-top:15px; background:#F44336;">GANTI PASSWORD</button>
+                </form>
+            </div>
+            
+            <!-- Detail Profil (Bank) -->
+            <div style="background:white; padding:15px; border-radius:12px; margin-bottom:20px; box-shadow:0 3px 10px rgba(0,0,0,0.05);">
+                <div style="font-size:16px; font-weight:700; color:#2c3e50; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">Rekening Bank</div>
+                <form id="formBank" onsubmit="simpanDetailBank(event)">
+                    <input type="hidden" id="profUser" name="profUser">
+                    
+                    <!-- DROPDOWN ALAMAT DEFAULT TELAH DIHAPUS -->
+                    
+                    <div style="margin-bottom: 10px;"><label class="form-label">Nama Bank / E-Wallet</label><input type="text" class="form-input" id="profBank" name="profBank" required></div>
+                    <div style="margin-bottom: 10px;"><label class="form-label">Nomor Rekening / No. HP</label><input type="number" class="form-input" id="profNoRek" name="profNoRek" required></div>
+                    <div style="margin-bottom: 10px;"><label class="form-label">Nama Pemilik Rekening</label><input type="text" class="form-input" id="profPemilik" name="profPemilik" required></div>
+                    <button type="submit" id="btnSimpanBank" class="btn-primary" style="margin-top:15px;">SIMPAN DETAIL PROFIL</button>
+                </form>
+            </div>
+            
+            <!-- Tombol Logout BARU di halaman Profil -->
+            <button onclick="logout()" class="btn-primary" style="background:#999; margin-top:30px;">
+                <i class="fas fa-power-off"></i> LOGOUT
+            </button>
+        </div>
+    </div>
+    <!-- END Halaman Profil -->
+
+
+    <div id="admin-page">
+      <div class="header-admin">
+        <div class="top-nav">
+            <div><span style="font-size:18px;font-weight:700;">Admin Panel</span></div>
+            <!-- Tombol Logout Admin tetap dipertahankan -->
+            <div class="user-avatar" onclick="logout()"><i class="fas fa-power-off"></i></div>
+        </div>
+      </div>
+      
+      <div style="padding: 10px 20px 0px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div style="font-size:14px; font-weight:700; color:#2c3e50;">Kontrol Global Penarikan</div>
+              <!-- TOMBOL REFRESH STATS ADMIN BARU -->
+              <button class="btn-primary" style="width:auto; margin:0; padding:8px 10px; background:#1E90FF;" onclick="adminRefreshStats()">
+                  <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+          </div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:15px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.05);">
+              <div>Status: <b id="globalWDStatus">Memuat...</b></div>
+              <button id="btnWDControl" class="btn-primary" style="width:auto; margin:0; padding:10px 15px; background:#4CAF50;" onclick="adminToggleWD()">Toggle</button>
+          </div>
+      </div>
+      
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <small>Total Saldo User</small>
+            <h3 id="statSaldo">Rp 0</h3>
+        </div>
+        
+        <div class="admin-stat-card">
+            <small>Total User</small>
+            <h3 id="statUser">0</h3>
+        </div>
+        <div class="admin-stat-card">
+            <small>Total Penarikan</small>
+            <h3 id="statTotalWD" style="color:#2c3e50;">0</h3>
+            <div class="order-status-breakdown" style="padding-top:0; border-top:none;">
+                <div class="status-item">
+                    <div class="status-count status-warning" id="count-wd-diproses">0</div>
+                    <div class="status-label">DiProses</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-count status-info" id="count-wd-disetor">0</div>
+                    <div class="status-label">Disetor</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-count status-success" id="count-wd-berhasil">0</div>
+                    <div class="status-label">Berhasil</div>
+                </div>
+            </div>
+            <hr style="margin-top:10px; margin-bottom:5px;">
+            <div style="font-size:12px; font-weight:600; color:#D32F2F;">Ditolak: <span id="count-wd-ditolak">0</span></div>
+        </div>
+        <div class="admin-stat-card">
+            <small>Total Pesanan</small>
+            <h3 id="statOrder">0</h3>
+            <div class="order-status-breakdown">
+                <div class="status-item">
+                    <div class="status-count status-info" id="count-dikirim">0</div>
+                    <div class="status-label">Dikirim</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-count status-success" id="count-diterima">0</div>
+                    <div class="status-label">Diterima</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-count status-danger" id="count-dibatalkan">0</div>
+                    <div class="status-label">Gagal</div>
+                </div>
+            </div>
+        </div>
+        </div>
+      <div class="admin-tabs">
+        <button class="tab-btn active" onclick="adminSwitchTab(event, 'withdraw')">Penarikan</button>
+        <button class="tab-btn" onclick="adminSwitchTab(event, 'orders')">Pesanan</button>
+        <button class="tab-btn" onclick="adminSwitchTab(event, 'users')">User</button>
+      </div>
+      
+      <div id="admin-search-container" style="padding:0 20px; margin-bottom:15px;" class="hidden">
+          <input type="text" id="adminSearchInput" class="search-box" placeholder="Cari pesanan (User/Penerima/ID)..." onkeyup="filterAdminCards('orders')">
+      </div>
+
+      <!-- BARU: Kontainer untuk Filter Cepat Pesanan -->
+      <div id="admin-order-filter" style="padding:0 20px 15px 20px;" class="hidden">
+          <div style="display:flex; gap:8px;">
+              <button class="filter-btn active" onclick="adminFilterOrders('all', this)">Semua</button>
+              <button class="filter-btn" onclick="adminFilterOrders('dikirim', this)">Dikirim</button>
+              <button class="filter-btn" onclick="adminFilterOrders('diterima', this)">Diterima</button>
+              <button class="filter-btn" onclick="adminFilterOrders('gagal', this)">Ditolak/Gagal</button>
+          </div>
+      </div>
+      <!-- END BARU -->
+      
+      <!-- Tombol Kembali ke Daftar User (Akan disembunyikan/ditampilkan oleh JS) -->
+      <div id="admin-order-back-btn" style="padding:0 20px; margin-bottom:15px;" class="hidden">
+          <button class="back-to-list-btn" onclick="adminRenderOrdersOverview()"><i class="fas fa-arrow-left"></i> Kembali ke Daftar User</button>
+      </div>
+
+      <div id="admin-content" style="padding:0 20px;"></div>
+    </div>
+    
+    <div id="list-page">
+      <div class="header-minimal">
+          <div class="top-nav">
+              <div onclick="kembaliKeDash()" style="color:#1E90FF;cursor:pointer; font-weight:600;"><i class="fas fa-arrow-left"></i> Kembali</div>
+              <b>Data Pesanan</b>
+              <div></div>
+          </div>
+      </div>
+      
+      <div style="padding: 15px 20px 5px 20px; background-color: #f5f6fa;">
+        <input type="text" id="searchPesanan" class="search-box" placeholder="Cari ID, Penerima, atau Resi..." onkeyup="filterPesanan()">
+        <div class="form-row" style="margin-top: 10px;">
+            <div class="form-col">
+                <select class="form-select" id="filterStatus" onchange="filterPesanan()">
+                    <option value="">Semua Status</option>
+                    <option value="Telah Diterima">Diterima</option>
+                    <option value="Dalam Pengiriman">Dikirim</option>
+                    <option value="Pengiriman Gagal">Gagal</option>
+                    <option value="Ditolak">Ditolak</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <select class="form-select" id="filterProduk" onchange="filterPesanan()">
+                    <option value="">Semua Produk</option>
+                    </select>
+            </div>
+        </div>
+    </div>
+
+      <div id="list-container" class="list-container">
+        <div style="text-align:center;padding:30px;">Memuat...</div>
+      </div>
+    </div>
+    <div id="fee-page">
+      <div class="header-minimal">
+        <div class="top-nav">
+          <div onclick="kembaliKeDash()" style="color:#1E90FF;cursor:pointer; font-weight:600;"><i class="fas fa-arrow-left"></i> Kembali</div>
+          <b>Riwayat Fee</b>
+          <div></div>
+        </div>
+      </div>
+      <div class="fee-container">
+        <input type="text" id="searchFee" class="search-box" placeholder="Cari..." onkeyup="filterFeeTable()">
+        <div class="table-responsive">
+          <table class="custom-table" id="feeTable">
+            <thead>
+              <tr><th>Penerima</th><th>Produk</th><th>Alamat</th><th>No.Pesan</th><th>Fee</th></tr>
+            </thead>
+            <tbody id="feeTableBody"></tbody>
+          </table>
+          <div id="loadingFee" style="text-align:center;padding:20px;">Memuat...</div>
+        </div>
+      </div>
+    </div>
+    <div id="wd-history-page">
+      <div class="header-minimal">
+        <div class="top-nav">
+          <div onclick="kembaliKeDash()" style="color:#1E90FF;cursor:pointer; font-weight:600;"><i class="fas fa-arrow-left"></i> Kembali</div>
+          <b>Riwayat Penarikan</b>
+          <div></div>
+        </div>
+      </div>
+      <div id="wd-list-container" style="padding-bottom:30px;">
+        <div style="text-align:center;padding:40px;color:#999;">Memuat...</div>
+      </div>
+    </div>
+
+    <div id="modalInput" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Tambah Data</div>
+            <form id="formPesanan" onsubmit="kirimPesanan(event)">
+                <input type="hidden" id="hideUser" name="hideUser">
+                <input type="hidden" id="modeInput" name="modeInput">
+                <input type="hidden" id="editId" name="editId">
+                <div style="margin-bottom: 10px;"><label class="form-label">Nama Penerima</label><input type="text" class="form-input" id="inPenerima" name="inPenerima" required></div>
+                <div class="form-row">
+                    <div class="form-col"><label class="form-label">Produk</label><select class="form-select" id="inProduk" name="inProduk"></select></div>
+                    <div class="form-col"><label class="form-label">Jumlah</label><input type="number" class="form-input" id="inJumlah" name="inJumlah"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col"><label class="form-label">Kode Alamat</label><select class="form-select" id="inAlamat" name="inAlamat"></select></div>
+                    <div class="form-col"><label class="form-label">Kode Alamat Job</label><select class="form-select" id="inAlamatJob" name="inAlamatJob"></select></div> <!-- BARU -->
+                </div>
+                <div class="form-row">
+                    <div class="form-col"><label class="form-label">Harga Yang Didapat</label><input type="number" class="form-input" id="inHarga" name="inHarga"></div>
+                    <div class="form-col"><label class="form-label">Harga Max Admin (Rp)</label><input type="number" class="form-input" id="inHargaMaxAdmin" name="inHargaMaxAdmin" value="0"></div>
+                </div>
+                
+                <div style="margin-bottom: 10px;"><label class="form-label">No Pesanan</label><input type="text" class="form-input" id="inNoPesan" name="inNoPesan"></div>
+                <div style="margin-bottom: 10px;"><label class="form-label">No Resi</label><input type="text" class="form-input" id="inResi" name="inResi"></div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Keterangan</label>
+                        <div style="font-size:12px;">
+                            <label><input type="radio" name="inKet" value="Telah Diterima"> Diterima</label><br>
+                            <label><input type="radio" name="inKet" value="Dalam Pengiriman" checked> Dikirim</label><br>
+                            <label><input type="radio" name="inKet" value="Pengiriman Gagal"> Pengiriman Gagal</label><br>
+                            <label><input type="radio" name="inKet" value="Ditolak"> Ditolak</label>
+                        </div>
+                    </div>
+                    <div class="form-col"><label class="form-label">Tanggal Pemesanan</label><input type="date" class="form-input" id="inTgl" name="inTgl"></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="submit" id="btnSimpan" class="btn-submit">Simpan</button></div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="modalTarik" class="modal-overlay hidden"><div class="modal-content"><div class="modal-header">Tarik Saldo</div><form id="formTarik" onsubmit="kirimPenarikan(event)"><input type="hidden" id="hideUserTarik" name="hideUserTarik"><div style="margin-bottom: 10px;"><label class="form-label">Nama Bank / E-Wallet</label><input type="text" class="form-input" id="tarikBank" name="tarikBank" placeholder="Contoh: BRI, DANA, OVO" required></div><div style="margin-bottom: 10px;"><label class="form-label">Nomor Rekening / No. HP</label><input type="number" class="form-input" id="tarikNoRek" name="tarikNoRek" placeholder="08xx / 123xx" required></div><div style="margin-bottom: 10px;"><label class="form-label">Nama Pemilik Rekening</label><input type="text" class="form-input" id="tarikPemilik" name="tarikPemilik" required></div><div style="margin-bottom: 10px;"><label class="form-label">Jumlah Penarikan (Min Rp 3000)</label><input type="number" class="form-input" id="tarikNominal" name="tarikNominal" required></div><div class="modal-footer"><button type="button" class="btn-cancel" onclick="document.getElementById('modalTarik').classList.add('hidden')">Batal</button><button type="submit" id="btnKirimTarik" class="btn-submit">Kirim Permintaan</button></div></form></div></div>
+
+    <div id="modalAdminOrder" class="modal-overlay hidden"><div class="modal-content"><div class="modal-header">Detail Pesanan</div><div id="adminOrderDetailContent" style="margin-bottom:20px;"></div><div id="adminBonusArea"></div><div class="modal-footer"><button type="button" class="btn-cancel" onclick="document.getElementById('modalAdminOrder').classList.add('hidden')">Tutup</button></div></div></div>
+
+    <!-- BARU: Modal untuk Edit Saldo Admin -->
+    <div id="modalAdjustSaldo" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">Edit Saldo <span id="adjUserName"></span></div>
+            <form id="formAdjustSaldo" onsubmit="kirimAdjustmentSaldo(event)">
+                <input type="hidden" id="adjUserId" name="adjUserId">
+                <input type="hidden" id="adjUsername" name="adjUsername">
+                <div style="margin-bottom: 10px;"><label class="form-label">Saldo Saat Ini</label><input type="text" class="form-input" id="adjCurrentSaldo" disabled></div>
+                <div style="margin-bottom: 10px;"><label class="form-label">Nominal Penyesuaian (Minus untuk Potong)</label><input type="number" class="form-input" id="adjNominal" name="adjNominal" placeholder="Contoh: 10000 (Tambah) atau -5000 (Potong)" required></div>
+                <div style="margin-bottom: 10px;"><label class="form-label">Alasan</label><input type="text" class="form-input" id="adjNotes" name="adjNotes" required></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('modalAdjustSaldo').classList.add('hidden')">Batal</button>
+                    <button type="submit" id="btnAdjustSaldo" class="btn-submit" style="background:#1E90FF;">Simpan Penyesuaian</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- END Modal Edit Saldo Admin -->
+
+    <script>
+      var currentUser = ""; 
+      var currentRole = "";
+      var refreshInterval; 
+      var currentAdminData = {}; 
+      var allOrders = []; 
+      var currentAdminOrders = []; // Cache data lengkap pesanan Admin
+      var adminOrdersDetailedUser = null; // BARU: Menandakan user yang sedang dilihat detailnya
+
+      window.onload = function() { 
+          // Pastikan semua halaman utama selain auth disembunyikan saat load
+          document.getElementById('dashboard-page').style.display='none';
+          document.getElementById('admin-page').style.display='none';
+          document.getElementById('list-page').style.display='none';
+          document.getElementById('fee-page').style.display='none';
+          document.getElementById('wd-history-page').style.display='none';
+          document.getElementById('profile-page').style.display='none';
+          
+          google.script.run.withSuccessHandler(isiDropdown).getDropdownData(); 
+      };
+
+      /**
+       * MODIFIKASI: Menghapus referensi Alamat Default dari Profile.
+       */
+      function isiDropdown(data) { 
+          var p = document.getElementById('inProduk'), 
+              a = document.getElementById('inAlamat'),
+              aj = document.getElementById('inAlamatJob');
+              
+          // 1. Reset dropdown
+          p.innerHTML='<option value="">Pilih</option>'; 
+          a.innerHTML='<option value="">Pilih</option>'; 
+          aj.innerHTML='<option value="">Pilih</option>'; 
+          
+          // 2. Isi Produk & Alamat Master (Kolom A & B)
+          data.produk.forEach(x => p.innerHTML+=`<option value="${x}">${x}</option>`); 
+          data.alamat.forEach(x => {
+              a.innerHTML+=`<option value="${x}">${x}</option>`; 
+              // profDefaultAddress tidak lagi diisi
+          });
+
+          // 3. Isi Alamat Job (Kolom C)
+          data.alamatJob.forEach(x => aj.innerHTML+=`<option value="${x}">${x}</option>`); 
+      }
+
+
+      /* HELPER SWEET ALERT */
+      function showSuccess(msg) { Swal.fire({ icon: 'success', title: 'Berhasil!', text: msg, confirmButtonColor: '#1E90FF' }); }
+      function showError(msg) { Swal.fire({ icon: 'error', title: 'Gagal!', text: msg, confirmButtonColor: '#d33' }); }
+      
+      // HELPER untuk membersihkan nilai Rupiah menjadi angka
+      function cleanRupiahToNumber(rupiahString) {
+          if (!rupiahString) return 0;
+          // Hapus 'Rp', spasi, dan titik ribuan, lalu ubah ke integer
+          var cleanStr = String(rupiahString).replace(/[^0-9-]/g, '');
+          var num = parseFloat(cleanStr);
+          return isNaN(num) ? 0 : num;
+      }
+      
+      // HELPER BARU untuk format ke Rupiah (dibuat di sini karena tidak bisa memanggil Code.gs)
+      function formatRupiahJs(angka) { 
+        try { 
+          return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); 
+        } catch (e) { 
+          return "Rp " + angka; 
+        } 
+      }
+
+
+      function tampilRegister(){ document.getElementById('form-login').classList.add('hidden'); document.getElementById('form-register').classList.remove('hidden'); }
+      function tampilLogin(){ document.getElementById('form-register').classList.add('hidden'); document.getElementById('form-login').classList.remove('hidden'); }
+      
+      function logout(){ 
+        if (refreshInterval) clearInterval(refreshInterval); 
+        location.reload(); 
+      }
+      
+      function kembaliKeDash() { 
+        document.querySelectorAll('[id$="-page"]').forEach(el=>el.style.display='none'); 
+        document.getElementById('dashboard-page').style.display='block'; 
+      }
+
+      // FUNGSI UNTUK REFRESH SALDO MANUAL/BERKALA
+      function refreshSaldo() {
+          if (currentRole === 'user') {
+              var saldoEl = document.getElementById('viewSaldo');
+              var oldText = saldoEl.innerText;
+              saldoEl.innerText = 'Memuat...';
+              
+              google.script.run.withSuccessHandler(res => {
+                  if (res.status === 'sukses') {
+                      saldoEl.innerText = res.saldo;
+                  } else {
+                      showError(res.pesan);
+                      saldoEl.innerText = oldText; 
+                  }
+              }).getSaldoRealtime(currentUser);
+          }
+      }
+      
+      function aksiLogin(){
+        var id=document.getElementById('loginId').value, pass=document.getElementById('loginPass').value, btn=document.getElementById('btnLogin');
+        if(!id||!pass){ showError('Isi semua kolom!'); return; }
+        btn.innerText='...'; btn.disabled=true;
+        
+        google.script.run.withSuccessHandler(res => {
+          btn.innerText='MASUK'; btn.disabled=false;
+          
+          if(res.status==='sukses'){
+            currentUser=res.nama; currentRole=res.role;
+            
+            // 1. SEMBUNYIKAN SEMUA HALAMAN APLIKASI
+            document.getElementById('auth-page').style.display='none';
+            document.getElementById('dashboard-page').style.display='none';
+            document.getElementById('admin-page').style.display='none';
+            document.getElementById('list-page').style.display='none';
+            document.getElementById('fee-page').style.display='none';
+            document.getElementById('wd-history-page').style.display='none';
+            document.getElementById('profile-page').style.display='none';
+            
+            if (refreshInterval) clearInterval(refreshInterval); 
+            
+            if(res.role === 'admin'){ 
+                // 2. TAMPILKAN HANYA HALAMAN ADMIN
+                document.getElementById('admin-page').style.display='block'; 
+                
+                // Panggil Statistik Admin dan tampilkan di kartu
+                adminRefreshStats(); // Panggil fungsi refresh baru saat login
+                loadGlobalWDStatus();
+                adminSwitchTab(null, 'withdraw'); 
+            } 
+            else { 
+                // 3. TAMPILKAN HANYA HALAMAN USER DASHBOARD
+                document.getElementById('viewNama').innerText=res.nama; 
+                document.getElementById('viewSaldo').innerText=res.saldo; 
+                document.getElementById('dashboard-page').style.display='block'; 
+                
+                // Cek status penarikan global
+                google.script.run.withSuccessHandler(statusRes => { 
+                    var btnTarik = document.querySelector('.btn-tarik');
+                    if (statusRes.status === 'sukses' && !statusRes.aktif) {
+                        btnTarik.classList.add('hidden');
+                    } else {
+                        btnTarik.classList.remove('hidden');
+                    }
+                }).getWithdrawStatus();
+                
+                // MULAI REFRESH SALDO BERKALA (setiap 30 detik)
+                refreshInterval = setInterval(refreshSaldo, 30000); 
+            }
+          } else showError(res.pesan);
+        }).checkLogin(id, pass);
+      }
+      
+      function aksiRegister(e){ 
+        e.preventDefault(); 
+        
+        var pass = document.getElementById('regPass').value;
+        var passConfirm = document.getElementById('regPassConfirm').value;
+        var btn = document.getElementById('btnReg');
+
+        // VALIDASI: Pastikan Password dan Konfirmasi Password cocok
+        if (pass !== passConfirm) {
+            showError('Password dan Konfirmasi Password tidak cocok!');
+            return;
+        }
+
+        // Set tombol loading
+        btn.innerText = 'Memproses...';
+        btn.disabled = true;
+
+        // regHargaMax tidak ada di form, tapi Code.gs sudah menangani default ke 0
+        google.script.run.withSuccessHandler(res=>{ 
+            btn.innerText = 'DAFTAR';
+            btn.disabled = false;
+            if(res.status==='sukses'){ 
+                showSuccess(res.pesan); // Pesan akan memberi tahu untuk menunggu persetujuan
+                tampilLogin(); 
+            } else {
+                showError(res.pesan);
+            }
+        }).registerUser(document.getElementById('regForm')); 
+      }
+      
+      /**
+       * MODIFIKASI: Menghapus logika auto-fill Alamat Default.
+       */
+      function bukaModalInput(mode, dataJson){ 
+        document.getElementById('modalInput').classList.remove('hidden'); 
+        var form=document.getElementById('formPesanan'); 
+        if(mode==='baru'){ 
+            document.getElementById('modalTitle').innerText="Tambah Data"; 
+            document.getElementById('modeInput').value="baru"; 
+            document.getElementById('editId').value=""; 
+            form.reset(); 
+            document.getElementById('hideUser').value=currentUser; 
+            // Default status ke 'Dalam Pengiriman'
+            document.querySelector('input[name="inKet"][value="Dalam Pengiriman"]').checked = true;
+            document.getElementById('inHargaMaxAdmin').value = 0; // Set default 0
+            document.getElementById('inAlamatJob').value = ''; 
+            
+            // Auto-fill Alamat dari Profile Default (logika dihapus di frontend)
+            google.script.run.withSuccessHandler(res => {
+                // Tidak ada lagi logika untuk mengisi document.getElementById('inAlamat').value dari res.defaultAddress
+            }).getUserProfileDetails(currentUser); 
+            
+        } else { 
+            var d=JSON.parse(dataJson); 
+            document.getElementById('modalTitle').innerText="Edit"; 
+            document.getElementById('modeInput').value="edit"; 
+            document.getElementById('editId').value=d.id; 
+            document.getElementById('hideUser').value=currentUser; 
+            document.getElementById('inPenerima').value=d.penerima; 
+            document.getElementById('inProduk').value=d.produk; 
+            document.getElementById('inJumlah').value=d.jumlah; 
+            document.getElementById('inAlamat').value=d.alamat; 
+            document.getElementById('inAlamatJob').value=d.alamatJob; 
+            document.getElementById('inHarga').value=cleanRupiahToNumber(d.harga); 
+            document.getElementById('inHargaMaxAdmin').value=cleanRupiahToNumber(d.hargaMaxAdmin); 
+            document.getElementById('inNoPesan').value=d.noPesan; 
+            document.getElementById('inResi').value=d.resi; 
+            document.getElementById('inTgl').value=d.tgl; 
+            document.querySelectorAll('input[name="inKet"]').forEach(radio => { if (radio.value === d.ket) radio.checked = true; }); 
+        } 
+      }
+      function tutupModal(){ document.getElementById('modalInput').classList.add('hidden'); }
+      
+      function kirimPesanan(e){ 
+        e.preventDefault(); 
+        var btn=document.getElementById('btnSimpan'); 
+        btn.innerText="..."; 
+        btn.disabled=true; 
+        google.script.run.withSuccessHandler(res => { 
+            btn.innerText="Simpan"; 
+            btn.disabled=false; 
+            if(res.status==='sukses'){ 
+                showSuccess("Data Tersimpan"); 
+                tutupModal(); 
+                if(document.getElementById('list-page').style.display==='block') bukaHalamanList(); 
+                refreshSaldo(); 
+            } else showError(res.pesan); 
+        }).prosesPesanan(document.getElementById('formPesanan')); 
+      }
+      
+      /* FITUR TARIK */
+      /**
+       * MODIFIKASI: Menggunakan getUserProfileDetails.
+       */
+      function bukaModalTarik(){ 
+        document.getElementById('modalTarik').classList.remove('hidden'); 
+        document.getElementById('hideUserTarik').value=currentUser; 
+        
+        // Cek data bank default dari PropertiesService saat buka modal
+        google.script.run.withSuccessHandler(res => {
+            if (res.status === 'sukses') {
+                if (res.bank) {
+                    document.getElementById('tarikBank').value = res.bank;
+                    document.getElementById('tarikNoRek').value = res.noRek;
+                    document.getElementById('tarikPemilik').value = res.pemilik;
+                } else {
+                    if(localStorage.getItem('saved_bank')) document.getElementById('tarikBank').value = localStorage.getItem('saved_bank');
+                    if(localStorage.getItem('saved_norek')) document.getElementById('tarikNoRek').value = localStorage.getItem('saved-norek');
+                    if(localStorage.getItem('saved_pemilik')) document.getElementById('tarikPemilik').value = localStorage.getItem('saved_pemilik');
+                }
+            }
+        }).getUserProfileDetails(currentUser); 
+
+      }
+      function kirimPenarikan(e){ 
+        e.preventDefault(); 
+        var btn=document.getElementById('btnKirimTarik'); 
+        var nom = document.getElementById('tarikNominal').value;
+        if(nom < 3000) { showError("Minimal penarikan Rp 3000"); return; }
+        
+        // Simpan juga ke LocalStorage sebagai fallback
+        localStorage.setItem('saved_bank', document.getElementById('tarikBank').value);
+        localStorage.setItem('saved-norek', document.getElementById('tarikNoRek').value);
+        localStorage.setItem('saved_pemilik', document.getElementById('tarikPemilik').value);
+
+        btn.innerText="..."; btn.disabled=true; 
+        google.script.run.withSuccessHandler(res=>{ 
+            btn.innerText="Kirim Permintaan"; btn.disabled=false; 
+            if(res.status==='sukses'){ 
+              showSuccess(res.pesan); 
+              document.getElementById('modalTarik').classList.add('hidden'); 
+              document.getElementById('formTarik').reset(); 
+              refreshSaldo(); 
+            } else showError(res.pesan); 
+        }).simpanPenarikan(document.getElementById('formTarik')); 
+      }
+
+      /* FITUR RIWAYAT PESANAN (Filter, Search, Detail Fee & Tombol Edit) */
+      function bukaHalamanList(){ 
+        document.getElementById('dashboard-page').style.display='none'; 
+        document.getElementById('list-page').style.display='block'; 
+        var c=document.getElementById('list-container');
+        c.innerHTML = '<div style="text-align:center;padding:30px;">Memuat...</div>';
+
+        google.script.run.withSuccessHandler(d => { 
+          // 1. Simpan data mentah
+          allOrders = d;
+          
+          // 2. Isi dropdown filter Produk
+          var produkSet = new Set();
+          d.forEach(item => produkSet.add(item.produk));
+          var filterP = document.getElementById('filterProduk');
+          filterP.innerHTML = '<option value="">Semua Produk</option>';
+          produkSet.forEach(p => filterP.innerHTML += `<option value="${p}">${p}</option>`);
+
+          // 3. Render dan Tampilkan data
+          renderOrders(allOrders);
+
+        }).getPesananUser(currentUser); 
+      }
+
+      /**
+       * MODIFIKASI: Menambahkan Harga Yang Didapat dan Harga Max Admin ke Card.
+       */
+      function renderOrders(ordersToDisplay) {
+          var c = document.getElementById('list-container');
+          if (ordersToDisplay.length === 0) {
+              c.innerHTML = '<div style="text-align:center;padding:30px;">Tidak ada pesanan yang cocok.</div>';
+              return;
+          }
+
+          var h = "";
+          ordersToDisplay.forEach(i => {
+              var json = JSON.stringify(i).replace(/"/g, '&quot;');
+              
+              // --- LOGIKA FEE ---
+              var feeNumber = cleanRupiahToNumber(i.fee);
+              var feeStatus, feeColor;
+
+              if (feeNumber === 0) {
+                  feeStatus = 'Fee Belum Diberikan';
+                  feeColor = '#E65100'; // Oranye
+              } else {
+                  feeStatus = 'Fee Diberikan: ' + i.fee; 
+                  feeColor = '#388E3C'; // Hijau
+              }
+              // --- END LOGIKA FEE ---
+              
+              // --- LOGIKA TOMBOL EDIT BARU: Nonaktif jika Fee > 0 ATAU statusnya final ---
+              var statusKet = i.ket.toLowerCase();
+              // Status final: Diterima, Ditolak, atau Gagal
+              var isFinalStatus = statusKet.includes('diterima') || statusKet.includes('ditolak') || statusKet.includes('gagal'); 
+              var isEditable = feeNumber === 0 && !isFinalStatus; // Hanya boleh diedit jika Fee=0 DAN status belum final
+              var editClass = isEditable ? 'btn-edit' : 'btn-edit-disabled';
+              var editAction = isEditable ? 
+                  `bukaModalInput('edit','${json}')` : 
+                  `showError('Pesanan tidak dapat diedit karena statusnya sudah final atau fee sudah diberikan. Jika ada kesalahan, harap hubungi Admin.')`;
+              // --- END LOGIKA TOMBOL EDIT BARU ---
+              
+              h += `<div class="order-card" data-penerima="${i.penerima}" data-produk="${i.produk}" data-status="${i.ket}" data-resi="${i.resi}">
+                    <div>
+                      <span class="status-badge">${i.ket}</span>
+                      <span class="date-label">${i.tgl}</span>
+                    </div>
+                    <table class="detail-table">
+                      <tr><td class="lbl">ID</td><td class="val">${i.id}</td></tr>
+                      <tr><td class="lbl">Penerima</td><td class="val">${i.penerima}</td></tr>
+                      <tr><td class="lbl">Produk</td><td class="val">${i.produk}</td></tr>
+                      <tr><td class="lbl">Alamat Job</td><td class="val">${i.alamatJob || '-'}</td></tr>
+                      <tr><td class="lbl">Harga Yang Didapat</td><td class="val" style="color:#E65100">${i.harga}</td></tr> <!-- BARIS BARU -->
+                      <tr><td class="lbl">Harga Max Admin</td><td class="val">${i.hargaMaxAdmin}</td></tr> <!-- BARIS BARU -->
+                      <tr><td class="lbl">Resi</td><td class="val">${i.resi || '-'}</td></tr>
+                      <tr><td class="lbl">Fee</td><td class="val" style="font-weight:700; color:${feeColor}">${feeStatus}</td></tr>
+                    </table>
+                    <div class="action-btn-group">
+                      <button class="${editClass}" onclick="${editAction}">Edit</button>
+                      <button class="btn-del" onclick="hapusData('${i.id}')">Hapus</button>
+                    </div>
+                  </div>`;
+          });
+          c.innerHTML = h;
+      }
+      
+      function filterPesanan() {
+          var search = document.getElementById('searchPesanan').value.toLowerCase().trim();
+          var filterStat = document.getElementById('filterStatus').value.trim();
+          var filterProd = document.getElementById('filterProduk').value.trim();
+
+          var filtered = allOrders.filter(item => {
+              var matchesSearch = 
+                  item.id.toLowerCase().includes(search) || 
+                  item.penerima.toLowerCase().includes(search) || 
+                  (item.resi && item.resi.toLowerCase().includes(search));
+              
+              var matchesStatus = filterStat === "" || item.ket === filterStat;
+              var matchesProduk = filterProd === "" || item.produk === filterProd;
+
+              return matchesSearch && matchesStatus && matchesProduk;
+          });
+
+          renderOrders(filtered);
+      }
+      
+      function bukaHalamanFee(){ 
+        document.getElementById('dashboard-page').style.display='none'; 
+        document.getElementById('fee-page').style.display='block'; 
+        document.getElementById('loadingFee').style.display='block'; 
+        document.getElementById('feeTableBody').innerHTML=''; 
+        google.script.run.withSuccessHandler(d=>{ 
+          document.getElementById('loadingFee').style.display='none'; 
+          var tb=document.getElementById('feeTableBody'); 
+          if(d.length===0) tb.innerHTML='<tr><td colspan="5" style="text-align:center;">Kosong</td></tr>'; 
+          else { 
+            var h=""; 
+            d.forEach(i=>{ h+=`<tr><td>${i.penerima}</td><td>${i.produk}</td><td>${i.alamat}</td><td>${i.noPesan||'-'}</td><td class="fee-amount">${i.fee}</td></tr>`; }); 
+            tb.innerHTML=h; 
+          } 
+        }).getFeeUser(currentUser); 
+      }
+      function filterFeeTable(){ var f=document.getElementById("searchFee").value.toUpperCase(), tr=document.getElementById("feeTable").getElementsByTagName("tr"); for(var i=1;i<tr.length;i++){ var t=tr[i].innerText; tr[i].style.display=t.toUpperCase().indexOf(f)>-1?"":"none"; } }
+      function bukaHalamanWdHistory(){ 
+        document.getElementById('dashboard-page').style.display='none'; 
+        document.getElementById('wd-history-page').style.display='block'; 
+        var c=document.getElementById('wd-list-container'); c.innerHTML='<div style="text-align:center;padding:40px;">Memuat...</div>'; 
+        google.script.run.withSuccessHandler(d=>{ 
+          if(d.length===0){c.innerHTML='<div style="text-align:center;padding:40px;color:#999;">Kosong</div>';return;} 
+          var h=""; 
+          d.forEach(i=>{ 
+              var cl='st-proses'; 
+              if(i.status.includes('Setor'))cl='st-setor'; 
+              if(i.status.includes('Berhasil'))cl='st-berhasil'; 
+              if(i.status.includes('Ditolak'))cl='st-ditolak'; 
+              
+              var borderColor = cl === 'st-berhasil' ? '#388E3C' : (cl === 'st-setor' ? '#1976D2' : (cl === 'st-proses' ? '#FBC02D' : '#C62828'));
+
+              h+=`<div class="wd-card" style="border-left-color:${borderColor}">
+                      <div class="wd-info">
+                          <h4>Penarikan (${i.bank})</h4>
+                          <small>No. Rek: ${i.noRek} | A.N: ${i.pemilik}</small><br>
+                          <small>${i.tgl}</small>
+                      </div>
+                      <div class="wd-status">
+                          <span class="wd-nominal">${i.nominal}</span>
+                          <span class="badge ${cl}">${i.status}</span>
+                      </div>
+                  </div>`; 
+          }); 
+          c.innerHTML=h; 
+        }).getRiwayatTarik(currentUser); 
+      }
+      
+      function hapusData(id){ 
+         Swal.fire({title:'Hapus data?', icon:'warning', showCancelButton:true, confirmButtonText:'Ya, Hapus'}).then(r=>{ 
+           if(r.isConfirmed) google.script.run.withSuccessHandler(()=> { bukaHalamanList(); refreshSaldo(); }).hapusPesanan(id); 
+         }); 
+      }
+
+      /* FITUR PROFIL */
+      /**
+       * MODIFIKASI: Menghapus logika Alamat Default.
+       */
+      function bukaHalamanProfile() {
+          document.querySelectorAll('[id$="-page"]').forEach(el=>el.style.display='none'); 
+          document.getElementById('profile-page').style.display='block';
+          document.getElementById('profUser').value = currentUser;
+          document.getElementById('formPass').reset(); // Reset form password saat dibuka
+
+          // Muat data profil (bank)
+          google.script.run.withSuccessHandler(res => {
+              if (res.status === 'sukses') {
+                  document.getElementById('profBank').value = res.bank;
+                  document.getElementById('profNoRek').value = res.noRek;
+                  document.getElementById('profPemilik').value = res.pemilik;
+                  // profDefaultAddress dihapus
+              } else {
+                  showError("Gagal memuat detail profil: " + res.pesan);
+              }
+          }).getUserProfileDetails(currentUser); 
+      }
+
+      function gantiPassword(e) {
+          e.preventDefault();
+          var newPass = document.getElementById('newPass').value;
+          var confPass = document.getElementById('confPass').value;
+          var btn = document.getElementById('btnGantiPass');
+
+          if (newPass !== confPass) {
+              showError('Password baru dan konfirmasi tidak cocok!');
+              return;
+          }
+          if (newPass.length < 5) {
+               showError('Password minimal 5 karakter!');
+              return;
+          }
+
+          btn.innerText = 'Memproses...';
+          btn.disabled = true;
+
+          google.script.run.withSuccessHandler(res => {
+              btn.innerText = 'GANTI PASSWORD';
+              btn.disabled = false;
+              if (res.status === 'sukses') {
+                  showSuccess(res.pesan + " Harap login ulang.");
+                  // Reset form dan logout
+                  document.getElementById('formPass').reset();
+                  setTimeout(logout, 2000); 
+              } else {
+                  showError(res.pesan);
+              }
+          }).updateUserPassword(currentUser, newPass);
+      }
+
+      /**
+       * MODIFIKASI: Menghapus logika Alamat Default.
+       */
+      function simpanDetailBank(e) {
+          e.preventDefault();
+          var btn = document.getElementById('btnSimpanBank');
+
+          btn.innerText = 'Memproses...';
+          btn.disabled = true;
+
+          google.script.run.withSuccessHandler(res => {
+              btn.innerText = 'SIMPAN DETAIL PROFIL'; 
+              btn.disabled = false;
+              if (res.status === 'sukses') {
+                  showSuccess(res.pesan);
+                  // Hapus local storage karena data sudah disimpan di PropertiesService
+                  localStorage.removeItem('saved_bank');
+                  localStorage.removeItem('saved-norek');
+                  localStorage.removeItem('saved_pemilik');
+                  // Tidak ada lagi profDefaultAddress
+              } else {
+                  showError(res.pesan);
+              }
+          }).saveUserProfileDetails(document.getElementById('formBank')); 
+      }
+      /* END FITUR PROFIL */
+
+
+      /* --- ADMIN LOGIC --- */
+      
+      /**
+       * BARU: Fungsi untuk merefresh data statistik admin.
+       */
+      function adminRefreshStats() {
+          // Ganti teks placeholder
+          document.getElementById('statSaldo').innerText = '...'; 
+          document.getElementById('statUser').innerText = '...'; 
+          document.getElementById('statOrder').innerText = '...'; 
+
+          // Panggil backend
+          google.script.run.withSuccessHandler(stats=>{ 
+              document.getElementById('statSaldo').innerText=stats.saldo; 
+              document.getElementById('statUser').innerText=stats.users; 
+              
+              if (stats.wdBreakdown) {
+                  document.getElementById('statTotalWD').innerText = stats.wdBreakdown.total;
+                  document.getElementById('count-wd-diproses').innerText = stats.wdBreakdown.diproses;
+                  document.getElementById('count-wd-disetor').innerText = stats.wdBreakdown.disetor;
+                  document.getElementById('count-wd-berhasil').innerText = stats.wdBreakdown.berhasil;
+                  document.getElementById('count-wd-ditolak').innerText = stats.wdBreakdown.ditolak;
+              }
+              
+              document.getElementById('statOrder').innerText=stats.orders; 
+              if (stats.orderBreakdown) {
+                  document.getElementById('count-dikirim').innerText = stats.orderBreakdown.dikirim;
+                  document.getElementById('count-diterima').innerText = stats.orderBreakdown.diterima;
+                  document.getElementById('count-dibatalkan').innerText = stats.orderBreakdown.dibatalkan;
+              }
+              
+              loadGlobalWDStatus();
+          }).getAdminStatistics();
+      }
+
+      function adminSwitchTab(event, type) {
+        if(event) {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+          event.target.classList.add('active');
+        }
+
+        var c = document.getElementById('admin-content'); c.innerHTML = '<div style="text-align:center;padding:20px;">Memuat...</div>';
+        var searchCont = document.getElementById('admin-search-container');
+        var searchInput = document.getElementById('adminSearchInput');
+        var orderFilterCont = document.getElementById('admin-order-filter');
+        var backBtnCont = document.getElementById('admin-order-back-btn'); 
+
+        adminOrdersDetailedUser = null; // Reset status detail user
+
+        // KONTROL VISIBILITAS KOTAK PENCARIAN & FILTER
+        if (type === 'orders') {
+            searchCont.classList.remove('hidden');
+            searchInput.placeholder = 'Cari pesanan (User/Penerima/ID)...';
+            searchInput.onkeyup = function() { filterAdminCards('orders'); }; 
+            searchInput.value = ''; 
+            orderFilterCont.classList.add('hidden'); // Sembunyikan filter cepat di tampilan awal User List
+            backBtnCont.classList.add('hidden'); // Sembunyikan tombol kembali
+            // Reset filter ke 'Semua'
+            document.querySelectorAll('#admin-order-filter .filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#admin-order-filter .filter-btn').classList.add('active');
+
+
+            google.script.run.withSuccessHandler(data => {
+              currentAdminOrders = data; // Cache data lengkap
+              adminRenderOrdersOverview(data); // Panggil fungsi baru untuk render User Card
+            }).adminGetData('orders');
+
+        } else if (type === 'withdraw') {
+            searchCont.classList.remove('hidden');
+            searchInput.placeholder = 'Cari penarikan (User/Bank/No Rek)...';
+            searchInput.onkeyup = function() { filterAdminCards('withdraw'); };
+            searchInput.value = '';
+            orderFilterCont.classList.add('hidden');
+            backBtnCont.classList.add('hidden');
+            
+            google.script.run.withSuccessHandler(data => {
+                currentAdminData[type] = data; 
+                renderAdminContent(type, data);
+            }).adminGetData(type);
+        } else if (type === 'users') { 
+            searchCont.classList.remove('hidden'); 
+            searchInput.placeholder = 'Cari user (ID/Nama)...';
+            searchInput.onkeyup = function() { filterAdminCards('users'); };
+            searchInput.value = '';
+            orderFilterCont.classList.add('hidden');
+            backBtnCont.classList.add('hidden');
+            
+            google.script.run.withSuccessHandler(data => {
+                currentAdminData[type] = data; 
+                renderAdminContent(type, data);
+            }).adminGetData(type);
+        } else {
+            searchCont.classList.add('hidden');
+            orderFilterCont.classList.add('hidden');
+            backBtnCont.classList.add('hidden');
+        }
+      }
+      
+      /**
+       * Fungsi untuk mengelompokkan pesanan berdasarkan username.
+       */
+      function groupOrdersByUsername(orders) {
+          const grouped = {};
+          orders.forEach(order => {
+              const username = order.username;
+              if (!grouped[username]) {
+                  grouped[username] = [];
+              }
+              grouped[username].push(order);
+          });
+          return grouped;
+      }
+
+      /**
+       * BARU: Menampilkan daftar User Card di tab Orders.
+       */
+      function adminRenderOrdersOverview() {
+          var c = document.getElementById('admin-content');
+          var searchCont = document.getElementById('admin-search-container');
+          var orderFilterCont = document.getElementById('admin-order-filter');
+          var backBtnCont = document.getElementById('admin-order-back-btn');
+          
+          adminOrdersDetailedUser = null; // Reset status detail
+          orderFilterCont.classList.add('hidden');
+          backBtnCont.classList.add('hidden');
+          searchCont.classList.remove('hidden');
+          document.getElementById('adminSearchInput').value = '';
+          document.getElementById('adminSearchInput').placeholder = 'Cari user...';
+
+          if (currentAdminOrders.length === 0) {
+              c.innerHTML = '<div style="text-align:center;padding:20px;">Data Pesanan Kosong</div>';
+              return;
+          }
+
+          const grouped = groupOrdersByUsername(currentAdminOrders);
+          const usernames = Object.keys(grouped).sort();
+          
+          let h = "";
+          usernames.forEach(username => {
+              const orders = grouped[username];
+              // Hitung jumlah pesanan berstatus "Dalam Pengiriman" / "Dikirim"
+              const pendingCount = orders.filter(o => o.ket.toLowerCase().includes('kirim') || o.ket.toLowerCase().includes('pengiriman')).length;
+              
+              h += `<div class="user-group-card admin-card-userlist" 
+                      data-search="${username.toLowerCase()} (${orders.length})"
+                      onclick="adminShowUserOrders('${username}')">
+                      <div>
+                          <i class="fas fa-user"></i> <b>${username}</b>
+                      </div>
+                      <div>
+                          ${orders.length} Pesanan 
+                          ${pendingCount > 0 ? `(<b style="color:#FFD700;">${pendingCount}</b> Proses)` : ''}
+                      </div>
+                    </div>`;
+          });
+          
+          c.innerHTML = h;
+          filterAdminCards('userlist'); // Terapkan filter yang mungkin sudah ada
+      }
+      
+      /**
+       * BARU: Menampilkan detail pesanan untuk User tertentu.
+       */
+      function adminShowUserOrders(username) {
+          adminOrdersDetailedUser = username;
+          document.getElementById('admin-order-filter').classList.remove('hidden'); // Tampilkan filter cepat
+          document.getElementById('admin-order-back-btn').classList.remove('hidden'); // Tampilkan tombol kembali
+          document.getElementById('adminSearchInput').placeholder = `Cari pesanan ${username}...`;
+          document.getElementById('adminSearchInput').value = '';
+
+          // Filter data berdasarkan user yang dipilih dan render
+          const filteredOrders = currentAdminOrders.filter(item => item.username === username);
+          
+          // Render detail pesanan (menggunakan fungsi renderAdminContent lama)
+          renderAdminContent('orders', filteredOrders);
+      }
+      
+      // FUNGSI BARU UNTUK FILTER CEPAT PESANAN (Dimodifikasi agar mendukung User Detail View)
+      function adminFilterOrders(filterType, buttonEl) {
+          // 1. Update status tombol
+          if(buttonEl) {
+            document.querySelectorAll('#admin-order-filter .filter-btn').forEach(b => b.classList.remove('active'));
+            buttonEl.classList.add('active');
+          }
+
+          var filteredData = [];
+          var searchInput = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+
+          // 2. Tentukan kriteria status
+          var statusFilter = [];
+          if (filterType === 'dikirim') {
+              statusFilter = ['dalam pengiriman', 'dikirim'];
+          } else if (filterType === 'diterima') {
+              statusFilter = ['telah diterima', 'diterima'];
+          } else if (filterType === 'gagal') {
+              statusFilter = ['dibatalkan', 'batal', 'ditolak', 'gagal'];
+          } 
+
+          // 3. Filter data berdasarkan user yang sedang dilihat
+          let ordersToFilter = currentAdminOrders;
+          if (adminOrdersDetailedUser) {
+              ordersToFilter = currentAdminOrders.filter(item => item.username === adminOrdersDetailedUser);
+          }
+          
+          if (ordersToFilter.length > 0) {
+              filteredData = ordersToFilter.filter(item => {
+                  var itemStatus = item.ket.toLowerCase().trim();
+                  // Search Match: cari di Penerima, ID, atau Resi (tidak perlu di username jika sudah dalam mode detail user)
+                  var searchMatch = item.penerima.toLowerCase().includes(searchInput) ||
+                                    item.id.toLowerCase().includes(searchInput) ||
+                                    (item.resi && item.resi.toLowerCase().includes(searchInput));
+
+                  var statusMatch = false;
+                  if (filterType === 'all') {
+                      statusMatch = true;
+                  } else {
+                      statusMatch = statusFilter.some(s => itemStatus.includes(s));
+                  }
+                  
+                  return searchMatch && statusMatch; 
+              });
+          }
+
+          // 4. Render hasil filter
+          renderAdminContent('orders', filteredData);
+      }
+
+      function filterAdminCards(type) {
+          var searchInput = document.getElementById("adminSearchInput").value.toUpperCase();
+          
+          if (type === 'orders') {
+              if (adminOrdersDetailedUser) {
+                  // Jika sedang dalam mode detail user, panggil filter cepat yang sudah dimodifikasi
+                  var activeBtn = document.querySelector('#admin-order-filter .filter-btn.active');
+                  var filterType = activeBtn ? activeBtn.onclick.toString().match(/'(.*?)'/)[1] : 'all'; 
+                  adminFilterOrders(filterType, activeBtn);
+                  return;
+              } else {
+                  // Jika masih di daftar user, filter User Cards
+                  var cards = document.querySelectorAll('.user-group-card');
+                  cards.forEach(card => {
+                      var text = card.getAttribute('data-search').toUpperCase();
+                      card.style.display = (text.indexOf(searchInput) > -1) ? "" : "none";
+                  });
+              }
+              return;
+          }
+          
+          // Logika filter untuk WD dan Users tetap sama
+          var className = (type === 'users') ? ".admin-card-user" : ".admin-card-wd";
+          var cards = document.querySelectorAll(className);
+          
+          cards.forEach(card => {
+              var text = card.getAttribute('data-search').toUpperCase();
+              card.style.display = (text.indexOf(searchInput) > -1) ? "" : "none";
+          });
+      }
+
+
+      function renderAdminContent(type, data) {
+          var c = document.getElementById('admin-content');
+          var h = "";
+          if(data.length===0) {
+              c.innerHTML = '<div style="text-align:center;padding:20px;">Data Kosong</div>';
+              return;
+          }
+
+          if(type === 'withdraw') {
+            // (LOGIKA RENDER WD TIDAK BERUBAH)
+            data.forEach(i => {
+              var st = i.status.toString().toLowerCase().trim(), btns = '';
+              var color, badgeClass = 'status-badge', statusText = i.status;
+              
+              if (st.includes('proses')) {
+                btns = `<div style="display:flex; gap:10px;"><button class="btn-setor" onclick="adminActionWD('${i.id}','Disetor')">Ubah ke Disetor</button><button class="btn-reject" onclick="adminActionWD('${i.id}','Ditolak')">Tolak</button></div>`;
+                badgeClass += ' st-proses';
+              } else if (st.includes('setor')) {
+                btns = `<div style="display:flex; gap:10px;"><button class="btn-acc" onclick="adminActionWD('${i.id}','Berhasil')">Selesai (Potong Saldo)</button></div>`;
+                badgeClass += ' st-setor';
+              } else {
+                // Berhasil / Ditolak
+                if (st.includes('berhasil')) {
+                    color = '#2e7d32'; 
+                    badgeClass += ' st-berhasil';
+                } else {
+                    color = '#D32F2F';
+                    badgeClass += ' st-ditolak'; 
+                }
+                btns = `<div style="text-align:center;color:${color};font-weight:bold;font-size:11px;margin-top:5px;">${i.status.toUpperCase()}</div>`;
+              }
+
+              h += `<div class="admin-card admin-card-wd" data-search="${i.username} ${i.bank} ${i.noRek} ${i.id}">
+                      <div style="display:flex;justify-content:space-between;">
+                          <b>${i.username}</b> <span style="color:#c0392b;font-weight:bold;">${i.nominalFmt}</span>
+                      </div>
+                      <div>${i.bank} - ${i.noRek}<br><small>${i.pemilik}</small></div>
+                      <div style="margin-top:5px;margin-bottom:5px;font-size:11px;">Status: <span class="${badgeClass}">${statusText}</span></div>
+                      ${btns}
+                    </div>`;
+            });
+            c.innerHTML = h;
+
+          } else if(type === 'orders') {
+            // LOGIKA RENDER ORDERS (HANYA INDIVIDUAL CARDS)
+            data.forEach(i => {
+                var jsonItem = JSON.stringify(i).replace(/"/g, '&quot;');
+                
+                // Logika Badge Status Pesanan
+                var statusText = i.ket.toString().trim(); 
+                var badgeStyle = 'background:#f0f0f0; color:#999;';
+
+                if (statusText.includes('Diterima')) badgeStyle = 'background:#E8F5E9; color:#388E3C;';
+                else if (statusText.includes('Pengiriman') || statusText.includes('Dikirim')) badgeStyle = 'background:#E3F2FD; color:#1976D2;';
+                // Penambahan status Gagal dan Ditolak
+                else if (statusText.includes('Gagal') || statusText.includes('Ditolak') || statusText.includes('Batal')) badgeStyle = 'background:#FFEBEE; color:#D32F2F;'; 
+
+                h += `<div class="admin-card admin-card-order" 
+                            data-search="${i.username} ${i.penerima} ${i.id}" 
+                            onclick="bukaModalAdminOrder('${jsonItem}')">
+                          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                              <div>
+                                  <b>${i.penerima}</b> 
+                                  <span style="font-size:11px; color:#888;">(${i.tgl})</span><br>
+                                  ${i.produk} (${i.alamatJob || '-'}) <!-- BARU: Tampilkan Alamat Job -->
+                              </div>
+                              <span class="status-badge" style="${badgeStyle}">${statusText}</span>
+                          </div>
+                          <div style="margin-top:5px; border-top:1px dashed #eee; padding-top:5px; font-size:12px;">
+                              <span style="color:#E65100;">Total: ${i.harga}</span> | Fee: <b style="color:#9C27B0;">${i.feeFmt}</b>
+                          </div>
+                        </div>`;
+            });
+            c.innerHTML = h;
+          } else if(type === 'users') {
+            // LOGIKA RENDER USERS DIMODIFIKASI UNTUK TOMBOL EDIT SALDO DAN PERSETUJUAN
+            data.forEach(i => { 
+              const saldoAngka = cleanRupiahToNumber(i.saldo);
+              const statusLower = i.status.toLowerCase();
+              
+              let statusBadgeClass = '';
+              let actionButtons = '';
+              
+              if (statusLower === 'pending') {
+                  statusBadgeClass = 'st-proses'; // Warna kuning/proses
+                  actionButtons = `
+                      <button class="btn-acc" style="width:auto; margin:0; padding:8px 10px; font-size: 11px; background:#4CAF50;" 
+                          onclick="adminSetStatusUser('${i.id}', 'Approved')">
+                          <i class="fas fa-check"></i> Setujui
+                      </button>
+                      <button class="btn-reject" style="width:auto; margin:0; padding:8px 10px; font-size: 11px;" 
+                          onclick="adminSetStatusUser('${i.id}', 'Rejected')">
+                          <i class="fas fa-times"></i> Tolak
+                      </button>
+                  `;
+              } else if (statusLower === 'approved') {
+                  statusBadgeClass = 'st-berhasil';
+                  actionButtons = `
+                      <!-- TOMBOL EDIT SALDO BARU -->
+                      <button class="btn-primary" style="width:auto; margin:0; padding:8px 10px; background:#1E90FF; font-size: 11px;" 
+                          onclick="bukaModalAdjustSaldo('${i.id}', '${i.nama}', ${saldoAngka})">
+                          <i class="fas fa-money-bill-wave"></i> Edit Saldo
+                      </button>
+                      <!-- TOMBOL HAPUS -->
+                      <button class="btn-reject" style="width:auto; margin:0; padding:8px 10px; font-size: 11px;" onclick="adminHapusUser('${i.id}')"><i class="fas fa-trash"></i></button>
+                  `;
+              } else if (statusLower === 'rejected') {
+                  statusBadgeClass = 'st-ditolak';
+                  actionButtons = `
+                      <button class="btn-primary" style="width:auto; margin:0; padding:8px 10px; background:#999; font-size: 11px;" 
+                          onclick="adminSetStatusUser('${i.id}', 'Pending')">
+                          <i class="fas fa-undo"></i> Pending
+                      </button>
+                      <button class="btn-reject" style="width:auto; margin:0; padding:8px 10px; font-size: 11px;" onclick="adminHapusUser('${i.id}')"><i class="fas fa-trash"></i></button>
+                  `;
+              }
+
+
+              h += `<div class="admin-card admin-card-user" data-search="${i.id} ${i.nama} ${i.status}">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <b>${i.nama}</b> 
+                                <span style="font-size:11px; color:#888;">(${i.id})</span><br>
+                                Saldo: ${i.saldo}
+                                <div style="margin-top:5px; font-size:11px;">Status: <span class="badge ${statusBadgeClass}">${i.status}</span> | <span style="color:#999;">Tgl Daftar: ${i.tglDaftar}</span></div>
+                            </div>
+                            <div style="display:flex; flex-direction: column; gap: 5px;">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                      </div>`; 
+            });
+            c.innerHTML = h;
+          }
+      }
+
+      function adminActionWD(id, status) {
+        Swal.fire({title:'Ubah status?', text:'Menjadi: '+status, icon:'question', showCancelButton:true}).then(r=>{
+           if(r.isConfirmed) google.script.run.withSuccessHandler(res => { 
+               showSuccess(res.pesan); 
+               adminSwitchTab(null, 'withdraw'); 
+               
+               // Refresh statistik saldo total dan WD (penting!)
+               adminRefreshStats();
+
+           }).adminUpdateStatusWD(id, status);
+        });
+      }
+
+      function adminHapusUser(id) {
+          Swal.fire({
+              title:'Hapus pengguna ini?', 
+              text:'Semua data transaksi pengguna akan tetap ada, tapi pengguna tidak bisa login.', 
+              icon:'warning', 
+              showCancelButton:true, 
+              confirmButtonText:'Ya, Hapus'
+          }).then(r=>{
+             if(r.isConfirmed) {
+                 google.script.run.withSuccessHandler(res => { 
+                     if(res.status === 'sukses') {
+                         showSuccess(res.pesan);
+                         adminSwitchTab(null, 'users'); 
+                     } else {
+                         showError(res.pesan);
+                     }
+                 }).adminDeleteUser(id);
+             }
+          });
+      }
+
+      /**
+       * BARU: Mengubah status persetujuan user dari admin.
+       */
+      function adminSetStatusUser(id, statusBaru) {
+          Swal.fire({
+              title: `Ubah status ke ${statusBaru}?`,
+              text: `ID: ${id}`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: `Ya, ${statusBaru}`
+          }).then(r => {
+              if (r.isConfirmed) {
+                  google.script.run.withSuccessHandler(res => {
+                      if (res.status === 'sukses') {
+                          showSuccess(res.pesan);
+                          adminSwitchTab(null, 'users'); 
+                      } else {
+                          showError(res.pesan);
+                      }
+                  }).adminSetUserStatus(id, statusBaru);
+              }
+          });
+      }
+      
+      function bukaModalAdminOrder(jsonString) {
+          var d = JSON.parse(jsonString);
+          document.getElementById('modalAdminOrder').classList.remove('hidden');
+          
+          var statusTampil = d.ket; 
+
+          // MENAMPILKAN HARGA MAX ADMIN DI MODAL ADMIN
+          var content = `<table class="detail-table">
+              <tr><td class="lbl">Username</td><td class="val">${d.username}</td></tr>
+              <tr><td class="lbl">Penerima</td><td class="val">${d.penerima}</td></tr>
+              <tr><td class="lbl">Produk</td><td class="val">${d.produk}</td></tr>
+              <tr><td class="lbl">Jumlah</td><td class="val">${d.jumlah}</td></tr>
+              <tr><td class="lbl">Kode Alamat</td><td class="val">${d.alamat}</td></tr>
+              <tr><td class="lbl">Alamat Job</td><td class="val">${d.alamatJob || '-'}</td></tr> <!-- BARU -->
+              <tr><td class="lbl">Harga User</td><td class="val">${d.harga}</td></tr>
+              <tr><td class="lbl" style="color:#D35400;">Harga Max Admin</td><td class="val" style="color:#D35400;">${d.hargaMaxAdmin}</td></tr> 
+              <tr><td class="lbl">No Pesan</td><td class="val">${d.noPesan || '-'}</td></td></tr>
+              <tr><td class="lbl">No Resi</td><td class="val">${d.resi || '-'}</td></tr>
+              <tr><td class="lbl">Status</td><td class="val"><b style="color:#1E90FF;">${statusTampil}</b></td></tr>
+              <tr><td class="lbl">Tanggal</td><td class="val">${d.tgl}</td></tr>
+          </table>`;
+          
+          document.getElementById('adminOrderDetailContent').innerHTML = content;
+          var bonusHTML = '';
+          
+          // Logika Fee: Hanya boleh diisi jika status SUDAH DITERIMA
+          var statusLower = statusTampil.toLowerCase();
+          
+          if (d.fee > 0) {
+              bonusHTML = `<div style="padding:15px; text-align:center; background:#e8f5e9; border-radius:8px; border:1px solid #c8e6c9;"><i class="fas fa-check-circle" style="color:#2e7d32; font-size:24px; margin-bottom:5px;"></i><br><span style="color:#2e7d32; font-weight:700;">Bonus Sudah Diberikan: <br> ${d.feeFmt}</span></div>`;
+          } else if (statusLower.includes('diterima')) {
+              bonusHTML = `<div style="border-top:1px dashed #ccc; padding-top:15px;"><label class="form-label" style="color:#9C27B0;">Berikan Bonus/Fee (Rp):</label><input type="number" id="adminBonusInput" class="form-input" placeholder="Contoh: 5000"><input type="hidden" id="adminOrderId" value="${d.id}"><button onclick="adminKirimBonus()" class="btn-bonus">Kirim Bonus</button></div>`;
+          } else {
+              bonusHTML = `<div style="text-align:center; color:#999; margin-top:15px; font-size:12px;">Fee hanya bisa diberikan jika status pesanan adalah **Telah Diterima**.<br>Status Saat Ini: **${statusTampil}**</div>`;
+          }
+          
+          document.getElementById('adminBonusArea').innerHTML = bonusHTML;
+      }
+
+      function adminKirimBonus() {
+          var id = document.getElementById('adminOrderId').value;
+          var nominal = document.getElementById('adminBonusInput').value;
+          if(!nominal) { showError("Masukkan nominal!"); return; }
+          Swal.fire({title:'Kirim Bonus?', text:'Rp '+nominal, icon:'question', showCancelButton:true}).then(r=>{
+              if(r.isConfirmed) {
+                  google.script.run.withSuccessHandler(function(res){ 
+                      if (res.status === 'sukses') {
+                          showSuccess(res.pesan); 
+                          document.getElementById('modalAdminOrder').classList.add('hidden'); 
+                          // Refresh tampilan (kembali ke list user atau tetap di detail user, tergantung konteks)
+                          if (adminOrdersDetailedUser) {
+                             adminSwitchTab(null, 'orders'); // Muat ulang data lengkap dan kembali ke daftar user
+                          } else {
+                             adminSwitchTab(null, 'orders');
+                          }
+                          
+                          // Tigger refresh Admin Stats (untuk update Total Pesanan dan rincian status)
+                          adminRefreshStats();
+
+                          // Tigger refresh saldo dan list pesanan pengguna, jika pengguna sedang login
+                          if (currentRole === 'user') {
+                            refreshSaldo();
+                            bukaHalamanList();
+                          }
+                      } else {
+                          showError(res.pesan);
+                      }
+                  }).adminUpdateFee(id, nominal);
+              }
+          });
+      }
+      
+      /* GLOBAL WD CONTROL */
+      function loadGlobalWDStatus() {
+          google.script.run.withSuccessHandler(res => {
+              var statusEl = document.getElementById('globalWDStatus');
+              var btn = document.getElementById('btnWDControl');
+              
+              if (res.status === 'sukses') {
+                  if (res.aktif) {
+                      statusEl.innerHTML = '<span style="color:#4CAF50;">AKTIF</span>';
+                      btn.style.backgroundColor = '#F44336'; // Merah untuk menonaktifkan
+                      btn.innerText = 'NONAKTIFKAN';
+                  } else {
+                      statusEl.innerHTML = '<span style="color:#F44336;">NONAKTIF</span>';
+                      btn.style.backgroundColor = '#4CAF50'; // Hijau untuk mengaktifkan
+                      btn.innerText = 'AKTIFKAN';
+                  }
+              } else {
+                  statusEl.innerText = 'Error';
+                  showError(res.pesan);
+              }
+          }).getWithdrawStatus();
+      }
+
+      function adminToggleWD() {
+          var currentStatusText = document.getElementById('globalWDStatus').innerText;
+          var nextStatus = currentStatusText === 'AKTIF'; // Jika sekarang AKTIF, status berikutnya adalah false (nonaktifkan)
+          var confirmMsg = nextStatus ? 'Apakah Anda yakin ingin NONAKTIFKAN penarikan saldo untuk SEMUA pengguna?' : 'Apakah Anda yakin ingin AKTIFKAN kembali penarikan saldo?';
+
+          Swal.fire({
+              title: 'Ubah Status Global?',
+              text: confirmMsg,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Ya, Ubah'
+          }).then(r => {
+              if (r.isConfirmed) {
+                  google.script.run.withSuccessHandler(res => {
+                      if (res.status === 'sukses') {
+                          showSuccess(res.pesan);
+                          loadGlobalWDStatus(); // Refresh tampilan tombol dan status
+                      } else {
+                          showError(res.pesan);
+                      }
+                  }).toggleWithdrawStatus(!nextStatus); // Kirim status lawan ke backend
+              }
+          });
+      }
+
+      /**
+       * BARU: Menampilkan modal edit saldo.
+       * @param {string} id - ID pengguna.
+       * @param {string} nama - Nama pengguna.
+       * @param {number} saldo - Saldo pengguna dalam bentuk angka (bukan Rupiah string).
+       */
+      function bukaModalAdjustSaldo(id, nama, saldo) {
+          document.getElementById('modalAdjustSaldo').classList.remove('hidden');
+          document.getElementById('adjUserId').value = id;
+          document.getElementById('adjUsername').value = nama;
+          document.getElementById('adjUserName').innerText = `(${nama})`;
+          // Menggunakan formatRupiahJs untuk menampilkan saldo saat ini
+          document.getElementById('adjCurrentSaldo').value = formatRupiahJs(saldo); 
+          document.getElementById('adjNominal').value = '';
+          document.getElementById('adjNotes').value = '';
+      }
+
+      /**
+       * BARU: Mengirim penyesuaian saldo ke backend.
+       */
+      function kirimAdjustmentSaldo(e) {
+          e.preventDefault();
+          var form = document.getElementById('formAdjustSaldo');
+          var username = form.adjUsername.value;
+          var nominal = form.adjNominal.value;
+          var notes = form.adjNotes.value;
+          var btn = document.getElementById('btnAdjustSaldo');
+
+          if (nominal == 0) { 
+              showError('Nominal tidak boleh 0.'); 
+              return; 
+          }
+          
+          btn.innerText = 'Memproses...';
+          btn.disabled = true;
+
+          google.script.run.withSuccessHandler(res => {
+              btn.innerText = 'Simpan Penyesuaian';
+              btn.disabled = false;
+              if (res.status === 'sukses') {
+                  showSuccess(res.pesan);
+                  document.getElementById('modalAdjustSaldo').classList.add('hidden');
+                  // Refresh Admin User List tab
+                  adminSwitchTab(null, 'users');
+                  // Refresh Admin Stats (for total saldo)
+                  adminRefreshStats();
+              } else {
+                  showError(res.pesan);
+              }
+          }).adminAdjustUserBalance(username, nominal, notes);
+      }
+    </script>
+  </body>
+</html>
